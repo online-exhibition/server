@@ -4,6 +4,7 @@ import {Router} from 'express';
 import passport from 'passport';
 
 import {getModificationDate} from '../utils/filesystem';
+import {permissionGate} from '../middlewares/authentication';
 
 /**
  * Sets up the routes for the API server
@@ -16,8 +17,8 @@ export default async function setup(server, config, logger) {
   const {name, version} = config;
   const router = new Router();
 
-  global.debug = logger.debug;
   const toplevelRoutes = [{uri: '/'}, {uri: '/memory', private: true}];
+
   router.get('/', (req, res) => {
     const api = {};
     toplevelRoutes.forEach((entry) => {
@@ -33,7 +34,9 @@ export default async function setup(server, config, logger) {
     });
   });
 
-  router.get('/memory', passport.authenticate('basic', {session: false}),
+  router.get('/memory',
+      passport.authenticate('basic', {session: false}),
+      permissionGate(['read:memory']),
       (req, res) => {
         res.append('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.json({memory: process.memoryUsage(), user: req.user});

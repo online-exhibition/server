@@ -1,7 +1,10 @@
 
 import passport from 'passport';
 import {BasicStrategy} from 'passport-http';
+import intersection from 'lodash/intersection';
+
 import {connectDatabase} from '../../database';
+import {HttpError} from '../../utils/error';
 
 /**
  * Create the authentication middleware processor.
@@ -37,4 +40,28 @@ export function authentication(config, logger) {
       },
   ));
   return passport.initialize();
+}
+
+/**
+ * Creates a permission checking middleware.
+ * @param  {array} permissions The permissions to check against
+ *    the user permissions
+ * @return {function} The permission checking middleware gate.
+ */
+export function permissionGate(permissions) {
+  return (req, res, next) => {
+    const {user} = req;
+    console.log(user);
+    if (!user || !user.permissions) {
+      return next(new HttpError(403, 'Unauthorized',
+          'The given user has not sufficient permissions.'));
+    }
+    const availablePermissions = intersection(permissions, user.permissions);
+    console.log(user, permissions, availablePermissions);
+    if (availablePermissions.length !== permissions.length) {
+      return next(new HttpError(403, 'Unauthorized',
+          'The given user has not sufficient permissions.'));
+    }
+    next();
+  };
 }
