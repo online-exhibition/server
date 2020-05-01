@@ -6,6 +6,8 @@ import passport from 'passport';
 import {getModificationDate} from '../utils/filesystem';
 import {permissionGate} from '../middlewares/authentication';
 
+import user from './user';
+
 /**
  * Sets up the routes for the API server
  * @param  {object} server The server where routes are registered
@@ -41,6 +43,8 @@ export default async function setup(server, config, logger) {
         res.append('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.json({memory: process.memoryUsage(), user: req.user});
       });
+
+  server.use('/user', await user(server, config, logger));
 
   server.use('/', router);
 }

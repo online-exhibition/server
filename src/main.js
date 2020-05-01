@@ -59,9 +59,9 @@ import {authentication} from './middlewares/authentication';
 
   config.email = {
     transport: createTransport({
-      host: 'smtp.strato.de',
-      port: 465,
-      auth: {user: 'noreply@chomim.de', pass: 'vL!NVXu7T@chomim'},
+      host: process.env.SMTP_SERVER,
+      port: process.env.SMTP_PORT,
+      auth: {user: process.env.SMTP_USERNAME, pass: process.env.SMTP_PASSWORD},
     }),
   };
 

@@ -1,4 +1,5 @@
 import dot from 'dot';
+import trim from 'lodash/trim';
 
 const templateSettings = {
   evaluate: /\{\{([\s\S]+?)\}\}/g,
@@ -14,8 +15,18 @@ const templateSettings = {
   selfcontained: false,
 };
 
+/**
+ * Send an E-Mail from the given template with the given scope.
+ * @param  {object} transport
+ * @param  {string} from
+ * @param  {string} to
+ * @param  {string} subject
+ * @param  {object} scope
+ * @param  {string} template
+ * @return {object} Information about the transport
+ */
 export function sendEmail(transport, from, to, subject, scope, template) {
-  const render = dot.template(template, templateSettings);
+  const render = dot.template(trim(template), templateSettings);
   return transport.sendMail({
     from,
     to,
