@@ -14,6 +14,9 @@ import trimEnd from 'lodash/trimEnd';
 
 import api from './api';
 
+import {cors} from './middlewares/cors';
+import {authentication} from './middlewares/authentication';
+
 (async () => {
   const pkg = JSON.parse(
       (await fs.promises.readFile('./package.json')).toString(),
@@ -107,6 +110,9 @@ import api from './api';
     });
     next();
   });
+
+  server.use(cors(config, logger));
+  server.use(authentication(config, logger));
 
   await api(server, config, logger);
 

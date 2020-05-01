@@ -35,12 +35,11 @@ function originComparator(origin) {
  */
 export function cors(config, logger) {
   return (req, res, next) => {
-    const tenant = req.tenant;
     const origin = req.get('Origin');
     const {traceId} = req;
     if (origin) {
       logger.debug({traceId, origin});
-      const allowedOrigins = [config.host, ...tenant.cors.whitelist];
+      const allowedOrigins = config.cors.whitelist;
       logger.debug({traceId, allowedOrigins});
       if (find(allowedOrigins, originComparator(origin)) !== null) {
         logger.debug({traceId, msg: 'Allow access.'});
