@@ -1,4 +1,3 @@
-import path from 'path';
 
 import {Router} from 'express';
 import passport from 'passport';
@@ -7,6 +6,9 @@ import {getModificationDate} from '../utils/filesystem';
 import {permissionGate} from '../middlewares/authentication';
 
 import user from './user';
+import upload from './upload';
+import images from './images';
+import management from './management';
 
 /**
  * Sets up the routes for the API server
@@ -45,6 +47,10 @@ export default async function setup(server, config, logger) {
       });
 
   server.use('/user', await user(server, config, logger));
+  server.use('/upload', await upload(server, config, logger));
+  server.use('/images', await images(server, config, logger));
+  server.use('/management', await management(server, config, logger));
+  // passport.authenticate('basic', {session: false}),
 
   server.use('/', router);
 }

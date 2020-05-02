@@ -34,7 +34,6 @@ export function authentication(config, logger) {
           return done(null, false);
         }
 
-        delete user._id;
         delete user.password;
         return done(null, user);
       },

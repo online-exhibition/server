@@ -32,6 +32,7 @@
       "  (async () => {",
       "    database = await connectDatabase(config.database);",
       "    $1 = database.collection('$1');",
+      "  })();",
       "  return async (req, res) => {",
       "    const {traceId, user, params, query, body} = req;",
       "    res.status(200).send({ok: true});",
