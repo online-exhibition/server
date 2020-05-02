@@ -28,7 +28,7 @@
       " */",
       "async function v1(config, logger) {",
       "  let database;",
-      "  let $1:collection;",
+      "  let ${1:collection};",
       "  (async () => {",
       "    database = await connectDatabase(config.database);",
       "    $1 = database.collection('$1');",

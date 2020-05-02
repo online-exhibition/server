@@ -5,6 +5,7 @@ import {getModificationDate} from '../../utils/filesystem';
 
 import addUser from './add-user';
 import getUser from './get-user';
+import getLogin from './login-user';
 import confirmUser from './confirm-user';
 import versions from '../../utils/versions';
 
@@ -47,6 +48,15 @@ export default async function setup(server, config, logger) {
           private: true,
         },
       ],
+      'login': [
+        {
+          url: req.urlPrefix + req.originalUrl + '/login',
+          method: 'GET',
+          description: 'Login user.',
+          versions: ['1.0.0'],
+          authorized: false,
+        },
+      ],
       'confirm': [
         {
           url: req.urlPrefix + req.originalUrl + '/confirm/:userId',
@@ -71,6 +81,11 @@ export default async function setup(server, config, logger) {
       passport.authenticate('basic', {session: false}),
       versions([
         {version: '1.0.0', handler: await getUser.v1(config, logger)},
+      ]));
+
+  router.get('/login',
+      versions([
+        {version: '1.0.0', handler: await getLogin.v1(config, logger)},
       ]));
 
   return router;
