@@ -1,5 +1,6 @@
 import {GridFSBucket} from 'mongodb';
 
+
 export class MongoStorage {
   constructor(database, name, logger) {
     this.bucket = new GridFSBucket(database, {bucketName: name});
@@ -18,11 +19,12 @@ export class MongoStorage {
     _upload[originalname] = outputStream.id;
     logger.debug({traceId, file},
         'Upload file %s and store with ID %s', originalname, outputStream.id);
-    file.stream.pipe(outputStream).
-        on('error', function(error) {
+    file.stream
+        .pipe(outputStream)
+        .on('error', function(error) {
           done(error);
-        }).
-        on('finish', function() {
+        })
+        .on('finish', function() {
           logger.debug({traceId},
               'File %s upload and stored with ID %s',
               originalname, outputStream.id);

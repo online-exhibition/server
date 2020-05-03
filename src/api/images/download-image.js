@@ -21,7 +21,7 @@ async function v1(config, logger) {
     logger.debug({traceId, file}, 'Load image from %s', id);
     res.append('Content-Type', 'image/jpeg');
     res.append('Content-Length', file.length.toString());
-    res.append('Cache-Control', 'public');
+    res.append('Cache-Control', 'public, must-revalidate');
     res.append('Last-Modified', new Date(file.uploadDate).toUTCString());
     await new Promise((resolve, reject) => {
       inputStream.on('error', reject);

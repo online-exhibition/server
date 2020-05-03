@@ -1,5 +1,4 @@
 import {Router} from 'express';
-import passport from 'passport';
 
 import {getModificationDate} from '../../utils/filesystem';
 
