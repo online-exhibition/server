@@ -1,8 +1,8 @@
-import {Router} from 'express';
+import { Router } from "express";
 
-import versions from '../../../utils/versions';
-import listImages from './list-images';
-import updateImage from './update-image';
+import versions from "../../../utils/versions";
+import listImages from "./list-images";
+import updateImage from "./update-image";
 
 /**
  * Sets up the routes
@@ -13,13 +13,19 @@ import updateImage from './update-image';
 export default async function setup(server, config, logger) {
   const router = new Router();
 
-  router.get('/', versions([
-    {version: '1.0.0', handler: await listImages.v1(config, logger)},
-  ]));
+  router.get(
+    "/",
+    versions([
+      { version: "1.0.0", handler: await listImages.v1(config, logger) },
+    ])
+  );
 
-  router.put('/:id', versions([
-    {version: '1.0.0', handler: await updateImage.v1(config, logger)},
-  ]));
+  router.put(
+    "/:id",
+    versions([
+      { version: "1.0.0", handler: await updateImage.v1(config, logger) },
+    ])
+  );
 
   return router;
 }

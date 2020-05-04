@@ -3,7 +3,7 @@ module.exports = {
     es6: true,
     node: true,
   },
-  extends: ["google"],
+  extends: ["google","plugin:prettier/recommended"],
   globals: {
     Atomics: "readonly",
     SharedArrayBuffer: "readonly",
@@ -13,6 +13,7 @@ module.exports = {
     sourceType: "module",
   },
   rules: {
-    'require-jsdoc': 'off'
+    'require-jsdoc': 'off',
+    "prettier/prettier": "error"
   },
 };
