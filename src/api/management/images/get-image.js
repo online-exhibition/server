@@ -16,24 +16,10 @@ async function v1(config, logger) {
     images = database.collection("images.files");
   })();
   return async (req, res) => {
-    const { traceId, user, params, origin, body } = req;
+    const { traceId, user, params, origin } = req;
     const { id } = params;
-    logger.debug({ traceId, body }, "Update data");
-    const { author, category, description, title } = body;
     const objectId = new ObjectId(id);
     const imageQuery = { _id: objectId, "metadata.user": user._id };
-    const image = await images.findOne(imageQuery);
-    const update = {
-      ...image.metadata,
-      user: user._id,
-      author,
-      category,
-      title,
-      description,
-      updated: new Date(),
-    };
-    logger.debug({ traceId, update }, "Data to update");
-    await images.updateOne(imageQuery, { $set: { metadata: update } });
     res
       .status(200)
       .send(imageDataProjection(origin)(await images.findOne(imageQuery)));

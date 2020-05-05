@@ -1,7 +1,7 @@
-import {ObjectId} from 'mongodb';
+import { ObjectId } from "mongodb";
 
-import {connectDatabase} from '../../../database';
-import {HttpError} from '../../../utils/error';
+import { connectDatabase } from "../../../database";
+import { HttpError } from "../../../utils/error";
 
 /**
  * Creates a route handler
@@ -11,21 +11,21 @@ import {HttpError} from '../../../utils/error';
  */
 async function v1(config, logger) {
   const database = await connectDatabase(config.database);
-  const exhibitions = database.collection('exhibitions');
+  const exhibitions = database.collection("exhibitions");
   return async (req, res) => {
-    const {params} = req;
-    const {exhibitionId} = params;
+    const { params } = req;
+    const { exhibitionId } = params;
     const objectId = new ObjectId(exhibitionId);
-    const result = await exhibitions.deleteOne({_id: objectId});
+    const result = await exhibitions.deleteOne({ _id: objectId });
 
     if (result.ok !== 1) {
       throw new HttpError(
-          500,
-          'ErrorDeleteExhibition',
-          'Error deleting the requested exhibition.',
+        500,
+        "ErrorDeleteExhibition",
+        "Error deleting the requested exhibition."
       );
     }
-    res.status(200).send({oke: true});
+    res.status(200).send({ oke: true });
   };
 }
 
