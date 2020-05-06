@@ -1,6 +1,7 @@
-import {GridFSBucket, ObjectId} from 'mongodb';
+import { GridFSBucket, ObjectId } from "mongodb";
 
-import {connectDatabase} from '../../database';
+import { connectDatabase } from "../../database";
+import { HttpError } from "../../utils/error";
 
 /**
  * Creates a route handler
@@ -10,23 +11,30 @@ import {connectDatabase} from '../../database';
  */
 async function v1(config, logger) {
   const database = await connectDatabase(config.database);
-  const images = new GridFSBucket(database, {bucketName: 'images'});
-  const imagesFiles = database.collection('images.files');
+  const images = new GridFSBucket(database, { bucketName: "images" });
+  const imagesFiles = database.collection("images.files");
   return async (req, res, next) => {
-    const {traceId, user, params, query, body} = req;
-    const {id} = params;
+    const { traceId, user, params, query, body } = req;
+    const { id } = params;
     const objectId = new ObjectId(id);
+    const file = await imagesFiles.findOne({ _id: objectId });
+    if (!file) {
+      throw new HttpError(
+        404,
+        "ImageNotFound",
+        "The requested image is not found."
+      );
+    }
     const inputStream = images.openDownloadStream(objectId);
-    const file = await imagesFiles.findOne({_id: objectId});
-    logger.debug({traceId, file}, 'Load image from %s', id);
-    res.append('Content-Type', 'image/jpeg');
-    res.append('Content-Length', file.length.toString());
-    res.append('Cache-Control', 'public, must-revalidate');
-    res.append('Last-Modified', new Date(file.uploadDate).toUTCString());
+    logger.debug({ traceId, file }, "Load image from %s", id);
+    res.append("Content-Type", "image/jpeg");
+    res.append("Content-Length", file.length.toString());
+    res.append("Cache-Control", "public, must-revalidate");
+    res.append("Last-Modified", new Date(file.uploadDate).toUTCString());
     await new Promise((resolve, reject) => {
-      inputStream.on('error', reject);
-      inputStream.on('finish', resolve);
-      inputStream.pipe(res, {end: true});
+      inputStream.on("error", reject);
+      inputStream.on("finish", resolve);
+      inputStream.pipe(res, { end: true });
     });
     res.status(200).send();
   };
@@ -40,17 +48,17 @@ async function v1(config, logger) {
  */
 async function v1Head(config, logger) {
   const database = await connectDatabase(config.database);
-  const imagesFiles = database.collection('images.files');
+  const imagesFiles = database.collection("images.files");
   return async (req, res, next) => {
-    const {traceId, user, params, query, body} = req;
-    const {id} = params;
+    const { traceId, user, params, query, body } = req;
+    const { id } = params;
     const objectId = new ObjectId(id);
-    const file = await imagesFiles.findOne({_id: objectId});
-    logger.debug({traceId, file}, 'Send image information from %s', id);
-    res.append('Content-Type', 'image/jpeg');
-    res.append('Content-Length', file.length.toString());
-    res.append('Cache-Control', 'public, must-revalidate');
-    res.append('Last-Modified', new Date(file.uploadDate).toUTCString());
+    const file = await imagesFiles.findOne({ _id: objectId });
+    logger.debug({ traceId, file }, "Send image information from %s", id);
+    res.append("Content-Type", "image/jpeg");
+    res.append("Content-Length", file.length.toString());
+    res.append("Cache-Control", "public, must-revalidate");
+    res.append("Last-Modified", new Date(file.uploadDate).toUTCString());
     res.status(200).send();
   };
 }

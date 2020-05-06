@@ -16,11 +16,13 @@ function postProcessing(images, imagesFiles, user, file, logger, traceId) {
       const inputStream = images.openDownloadStream(objectId);
       const metadata = await new Promise((resolve, reject) => {
         let meta;
-        inputStream.pipe(new JPGDecoder()).on("meta", (metadata) => {
-          meta = metadata;
-          logger.debug({ meta });
-          resolve(meta);
-        });
+        inputStream
+          .pipe(new JPGDecoder({ width: 200, height: 150 }))
+          .on("meta", (metadata) => {
+            meta = metadata;
+            logger.debug({ meta });
+            resolve(meta);
+          });
       });
 
       let update = {

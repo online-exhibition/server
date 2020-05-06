@@ -1,8 +1,8 @@
-import {connectDatabase} from '../../../database';
-import {validate} from '../../../utils/data';
-import assert from '../../../utils/assert';
-import {HttpError} from '../../../utils/error';
-import {exhibitionDataProjection} from './utils';
+import { connectDatabase } from "../../../database";
+import { validate } from "../../../utils/data";
+import assert from "../../../utils/assert";
+import { HttpError } from "../../../utils/error";
+import { exhibitionDataProjection } from "./utils";
 
 /**
  * Creates a route handler
@@ -12,23 +12,24 @@ import {exhibitionDataProjection} from './utils';
  */
 async function v1(config, logger) {
   const database = await connectDatabase(config.database);
-  const exhibitions = database.collection('exhibitions');
+  const exhibitions = database.collection("exhibitions");
   return async (req, res) => {
-    const {traceId, user, body, origin} = req;
-    const {title, description, maxCount, expire, textColor,
-      backgroundColor} = body;
-    const exhibition = {title, description, maxCount, expire, textColor,
-      backgroundColor};
-    validate(exhibition, ['title', 'description'], 2048);
+    const { traceId, user, body, origin } = req;
+    const { title, description, maxCount, expire, theme } = body;
+    const exhibition = {
+      title,
+      description,
+      maxCount,
+      expire,
+      theme,
+    };
+    validate(exhibition, ["title"], 2048);
 
-    assert.regex(title, /.{0,100}/, 'title', traceId);
-    assert.regex(description, /.{0,1024}/, 'description', traceId);
-    assert.regex(maxCount, /\d{0,10}/, 'maxCount', traceId);
-    assert.regex(textColor,
-        /#[0-9abcdef]{0,6}/i, 'textColor', traceId);
-    assert.regex(backgroundColor,
-        /#[0-9abcdef]{0,6}/i, 'backgroundColor', traceId);
-    assert.isoDate(expire, 'expire', traceId);
+    assert.regex(title, /.{0,100}/, "title", traceId);
+    assert.regex(description, /.{0,1024}/, "description", traceId);
+    assert.regex(maxCount, /\d{0,10}/, "maxCount", traceId);
+    assert.regex(theme, /.{0,50}/, "theme", traceId);
+    assert.isoDate(expire, "expire", traceId);
 
     const data = {
       ...exhibition,
@@ -41,17 +42,21 @@ async function v1(config, logger) {
     const result = await exhibitions.insertOne(data);
 
     if (result.ok === 1) {
-      logger.error({result, data}, 'Exhibition is not created.');
+      logger.error({ result, data }, "Exhibition is not created.");
       throw new HttpError(
-          500,
-          'CannotCreateExhibition',
-          'Exhibition is not created',
+        500,
+        "CannotCreateExhibition",
+        "Exhibition is not created"
       );
     }
 
-    res.status(200).send(
-        exhibitionDataProjection(origin)(await exhibitions
-            .findOne({_id: result.insertedId})));
+    res
+      .status(200)
+      .send(
+        exhibitionDataProjection(origin)(
+          await exhibitions.findOne({ _id: result.insertedId })
+        )
+      );
   };
 }
 

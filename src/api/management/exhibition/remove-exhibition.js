@@ -17,8 +17,7 @@ async function v1(config, logger) {
     const { exhibitionId } = params;
     const objectId = new ObjectId(exhibitionId);
     const result = await exhibitions.deleteOne({ _id: objectId });
-
-    if (result.ok !== 1) {
+    if (result.result.ok !== 1) {
       throw new HttpError(
         500,
         "ErrorDeleteExhibition",

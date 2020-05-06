@@ -1,6 +1,6 @@
-import {connectDatabase} from '../../../database';
-import {ObjectId} from 'mongodb';
-import {HttpError} from '../../../utils/error';
+import { connectDatabase } from "../../../database";
+import { ObjectId } from "mongodb";
+import { HttpError } from "../../../utils/error";
 
 /**
  * Creates a route handler
@@ -10,19 +10,20 @@ import {HttpError} from '../../../utils/error';
  */
 async function v1(config, logger) {
   const database = await connectDatabase(config.database);
-  const exhibitions = database.collection('exhibitions');
+  const exhibitions = database.collection("exhibitions");
   return async (req, res) => {
-    const {user, params} = req;
-    const {exhibitionId, id} = params;
+    const { user, params } = req;
+    const { exhibitionId, id } = params;
     const objectId = new ObjectId(exhibitionId);
-    const exhibition = await exhibitions.findOne({_id: objectId});
+    const exhibition = await exhibitions.findOne({ _id: objectId });
     const images = exhibition.images || [];
     const imageIndex = images.findIndex((image) => image.id === id);
     if (imageIndex < 0) {
       throw new HttpError(
-          404,
-          'ImageNotFound',
-          'The requested image is not available.');
+        404,
+        "ImageNotFound",
+        "The requested image is not available."
+      );
     }
     images.splice(imageIndex, 1);
     const update = {
@@ -30,9 +31,9 @@ async function v1(config, logger) {
       updated: new Date(),
       modifier: user.username,
     };
-    await exhibitions.updateOne({_id: objectId}, {$set: update});
+    await exhibitions.updateOne({ _id: objectId }, { $set: update });
 
-    res.status(200).send({ok: true});
+    res.status(200).send({ ok: true });
   };
 }
 

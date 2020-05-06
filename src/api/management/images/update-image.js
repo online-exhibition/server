@@ -1,6 +1,23 @@
+import { ObjectId } from "mongodb";
+
 import { connectDatabase } from "../../../database";
 import { imageDataProjection } from "./utils";
-import { ObjectId } from "mongodb";
+import assert from "../../../utils/assert";
+
+export const IMAGE_LICENSES = [
+  "CC BY",
+  "CC BY-SA",
+  "CC BY-ND",
+  "CC BY-NC",
+  "CC BY-NC-SA",
+  "CC BY-NC-ND",
+];
+
+async function licensesV1(config, logger) {
+  return (req, res) => {
+    res.status(200).json(IMAGE_LICENSES);
+  };
+}
 
 /**
  * Creates a route handler
@@ -9,24 +26,22 @@ import { ObjectId } from "mongodb";
  * @return {function} The route handler
  */
 async function v1(config, logger) {
-  let database;
-  let images;
-  (async () => {
-    database = await connectDatabase(config.database);
-    images = database.collection("images.files");
-  })();
+  const database = await connectDatabase(config.database);
+  const images = database.collection("images.files");
   return async (req, res) => {
     const { traceId, user, params, origin, body } = req;
     const { id } = params;
     logger.debug({ traceId, body }, "Update data");
-    const { author, category, description, title } = body;
+    const { author, license, category, description, title } = body;
     const objectId = new ObjectId(id);
+    assert.contains(license, IMAGE_LICENSES);
     const imageQuery = { _id: objectId, "metadata.user": user._id };
     const image = await images.findOne(imageQuery);
     const update = {
       ...image.metadata,
       user: user._id,
       author,
+      license,
       category,
       title,
       description,
@@ -42,4 +57,5 @@ async function v1(config, logger) {
 
 export default {
   v1,
+  licensesV1,
 };

@@ -22,11 +22,13 @@ async function v1(config, logger) {
       author,
       description,
       originalCreated,
+      at,
     } = body;
+    console.log(body);
     const objectId = new ObjectId(exhibitionId);
     const exhibition = await exhibitions.findOne({ _id: objectId });
     const images = exhibition.images || [];
-    images.push({
+    const newImage = {
       id,
       filename,
       title,
@@ -35,8 +37,12 @@ async function v1(config, logger) {
       author,
       description,
       originalCreated,
-    });
-
+    };
+    if (at != null) {
+      images.splice(at, 0, newImage);
+    } else {
+      images.push(newImage);
+    }
     const update = {
       images,
       updated: new Date(),
