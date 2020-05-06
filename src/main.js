@@ -1,34 +1,34 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-import {createTransport} from 'nodemailer';
+import { createTransport } from "nodemailer";
 
-import express from 'express';
-import morgan from 'morgan';
-import bunyan from 'bunyan';
-import bodyparser from 'body-parser';
-import compression from 'compression';
-import helmet from 'helmet';
-import * as uuid from 'uuid';
-import trimEnd from 'lodash/trimEnd';
+import express from "express";
+import morgan from "morgan";
+import bunyan from "bunyan";
+import bodyparser from "body-parser";
+import compression from "compression";
+import helmet from "helmet";
+import * as uuid from "uuid";
+import trimEnd from "lodash/trimEnd";
 
-import api from './api';
+import api from "./api";
 
-import {cors} from './middlewares/cors';
-import {authentication} from './middlewares/authentication';
+import { cors } from "./middlewares/cors";
+import { authentication } from "./middlewares/authentication";
 
 (async () => {
   const pkg = JSON.parse(
-      (await fs.promises.readFile('./package.json')).toString(),
+    (await fs.promises.readFile("./package.json")).toString()
   );
   const config = Object.assign(pkg.config, pkg.development);
   const port = config.port || 8080;
-  config.name = pkg.name + '@' + pkg.version;
+  config.name = pkg.name + "@" + pkg.version;
   config.version = pkg.version;
 
   const logConfig = {
     name: config.name,
-    level: config.logLevel || 'info',
+    level: config.logLevel || "info",
     streams: [
       {
         stream: process.stderr,
@@ -39,12 +39,12 @@ import {authentication} from './middlewares/authentication';
   if (config.log) {
     const logFolder = path.resolve(path.dirname(config.log));
     if (!fs.existsSync(logFolder)) {
-      fs.mkdirSync(logFolder, {recursive: true});
+      fs.mkdirSync(logFolder, { recursive: true });
     }
     logConfig.streams.push({
-      type: 'rotating-file',
+      type: "rotating-file",
       path: config.log,
-      period: '1d',
+      period: "1d",
       count: 8,
     });
   }
@@ -53,59 +53,62 @@ import {authentication} from './middlewares/authentication';
   logger.log = logger.debug;
 
   const accessLogStream = fs.createWriteStream(
-      config.accessLog || 'access.log',
-      {flags: 'a'},
+    config.accessLog || "access.log",
+    { flags: "a" }
   );
 
   config.email = {
     transport: createTransport({
       host: process.env.SMTP_SERVER,
       port: process.env.SMTP_PORT,
-      auth: {user: process.env.SMTP_USERNAME, pass: process.env.SMTP_PASSWORD},
+      auth: {
+        user: process.env.SMTP_USERNAME,
+        pass: process.env.SMTP_PASSWORD,
+      },
     }),
   };
 
   const server = express();
 
-  server.set('etag', false);
+  server.set("etag", false);
 
-  server.use(morgan('combined', {stream: accessLogStream}));
+  server.use(morgan("combined", { stream: accessLogStream }));
   server.use(compression());
-  server.use(bodyparser.json({limit: '200kb'}));
+  server.use(bodyparser.json({ limit: "200kb" }));
 
-  server.use(helmet.frameguard({action: 'deny'}));
+  server.use(helmet.frameguard({ action: "deny" }));
   server.use(helmet.hidePoweredBy());
   server.use(helmet.xssFilter());
   server.use(helmet.noSniff());
   server.use(
-      helmet.contentSecurityPolicy({
-        directives: {
-          defaultSrc: ['\'self\''],
-          scriptSrc: ['\'self\''],
-          connectSrc: ['\'self\' localhost'],
-        },
-      }),
+    helmet.contentSecurityPolicy({
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        connectSrc: ["'self' localhost"],
+      },
+    })
   );
 
   server.use((req, res, next) => {
     const start = Date.now();
-    const traceId = req.get('X-Trace-Id') || uuid.v4();
-    req.origin = req.protocol + '://' + req.get('HOST');
+    const traceId = req.get("X-Trace-Id") || uuid.v4();
+    req.origin = process.env.HOSTNAME;
     req.urlPrefix =
       req.protocol +
-      '://' +
-      req.get('HOST') +
-      trimEnd(req.get('X-Request-Uri'), '/');
+      "://" +
+      req.get("HOST") +
+      trimEnd(req.get("X-Request-Uri"), "/");
     req.traceId = traceId;
-    logger.debug({traceId}, 'Handling request ' + req.urlPrefix);
-    res.set('X-Trace-Id', traceId);
-    res.on('finish', () => {
+    logger.debug({ traceId }, "Handling request " + req.urlPrefix);
+    res.set("X-Trace-Id", traceId);
+    res.on("finish", () => {
       logger.debug(
-          {
-            traceId,
-            runtime: Date.now() - start,
-          },
-          'Request handled',
+        {
+          traceId,
+          runtime: Date.now() - start,
+        },
+        "Request handled"
       );
     });
     next();
@@ -118,7 +121,7 @@ import {authentication} from './middlewares/authentication';
 
   server.use((err, req, res, next) => {
     if (err instanceof Error) {
-      logger.error({err, stack: err.stack});
+      logger.error({ err, stack: err.stack });
       const statusCode = err.statusCode || err.status || 500;
       delete err.status;
       delete err.statusCode;
@@ -128,6 +131,6 @@ import {authentication} from './middlewares/authentication';
   });
 
   server.listen(port, () => {
-    logger.log('%s listening at port %s', logConfig.name, port);
+    logger.log("%s listening at port %s", logConfig.name, port);
   });
 })();
