@@ -1,4 +1,6 @@
-FROM node:12
+FROM node:lts-alpine
+
+RUN apk add --no-cache python make g++
 
 # Create app directory
 WORKDIR /usr/app
@@ -17,4 +19,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 8080
-CMD [ "npm", "start:dev" ]
+CMD [ "npm", "run", "start:dev" ]
