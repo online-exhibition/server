@@ -21,8 +21,10 @@
   },
   "homepage": "https://github.com/online-exhibition/server#readme",
   "scripts": {
-    "build": "babel src --out-dir lib",
-    "start": "nodemon --exec babel-node src/main.js"
+    "build": "babel src --out-dir lib && docker build -f Dockerfile-production -t exhibit-server:0.1 . && docker tag exhibit-server:0.1 docker.pkg.github.com/online-exhibition/exhibition/exhibit-server:0.1",
+    "publish:docker": "docker push docker.pkg.github.com/online-exhibition/exhibition/exhibit-server:0.1",
+    "start:dev": "nodemon --exec babel-node src/main.js",
+    "start": "node lib/main.js"
   },
   "config": {
     "port": 8080,

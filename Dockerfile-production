@@ -1,18 +1,19 @@
-FROM node:12
+FROM node:lts-alpine as builder
 
-# Create app directory
-WORKDIR /usr/app
+## Install build toolchain, install node deps and compile native add-ons
+RUN apk add --no-cache python make g++
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
 COPY package*.json ./
-
 RUN npm ci --only=production
 
-# Bundle app source
-COPY . .
-RUN chmod +x wait-for-it.sh
+FROM node:lts-alpine as app
+
+WORKDIR /usr/app
+
+## Copy built node modules and binaries without including the toolchain
+COPY package.json LICENSE README.md ./
+COPY lib lib
+COPY --from=builder node_modules node_modules
 
 EXPOSE 8080
-CMD [ "node", "./src/index.js" ]
+CMD [ "npm", "start" ]
