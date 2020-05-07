@@ -14,9 +14,10 @@ async function v1(config, logger) {
   const images = new GridFSBucket(database, { bucketName: "images" });
   const imagesFiles = database.collection("images.files");
   return async (req, res, next) => {
-    const { traceId, user, params, query, body } = req;
+    const { traceId, user, params } = req;
     const { id } = params;
     const objectId = new ObjectId(id);
+    const etagMatch = req.get("If-None-Match");
     const file = await imagesFiles.findOne({ _id: objectId });
     if (!file) {
       throw new HttpError(
@@ -25,12 +26,16 @@ async function v1(config, logger) {
         "The requested image is not found."
       );
     }
+    logger.debug({ from: file.md5, to: etagMatch });
+    if (file.md5 === etagMatch) {
+      return res.status(304).send();
+    }
     const inputStream = images.openDownloadStream(objectId);
     logger.debug({ traceId, file }, "Load image from %s", id);
     res.append("Content-Type", "image/jpeg");
     res.append("Content-Length", file.length.toString());
     res.append("Cache-Control", "public, must-revalidate");
-    res.append("Last-Modified", new Date(file.uploadDate).toUTCString());
+    res.append("ETag", file.md5);
     await new Promise((resolve, reject) => {
       inputStream.on("error", reject);
       inputStream.on("finish", resolve);
@@ -58,7 +63,7 @@ async function v1Head(config, logger) {
     res.append("Content-Type", "image/jpeg");
     res.append("Content-Length", file.length.toString());
     res.append("Cache-Control", "public, must-revalidate");
-    res.append("Last-Modified", new Date(file.uploadDate).toUTCString());
+    res.append("ETag", file.md5);
     res.status(200).send();
   };
 }
