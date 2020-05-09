@@ -1,6 +1,5 @@
 import { connectDatabase } from "../../../database";
-import assert from "../../../utils/assert";
-import { imageShortDataProjection } from "./utils";
+import { themeShortDataProjection } from "./utils";
 
 /**
  * Creates a route handler
@@ -10,20 +9,20 @@ import { imageShortDataProjection } from "./utils";
  */
 async function v1(config, logger) {
   const database = await connectDatabase(config.database);
-  const images = database.collection("images.files");
+  const themes = database.collection("themes");
   return async (req, res) => {
-    const { traceId, user, query, origin } = req;
+    const { traceId, query } = req;
     const { skip = "0", limit = "10" } = query;
 
     assert.regex(skip, /\d{0,10}/, "skip", traceId);
     assert.regex(limit, /\d{0,10}/, "limit", traceId);
 
-    const cursor = images.find(
-      { "metadata.user": user._id },
+    const cursor = themes.find(
+      {},
       {
         limit: parseInt(limit, 10),
         skip: parseInt(skip, 10),
-        sort: { "metadata.originalCreated": -1 },
+        sort: { name: -1 },
       }
     );
 
@@ -32,7 +31,7 @@ async function v1(config, logger) {
     res.set("X-Count", await cursor.count(false));
     res
       .status(200)
-      .send((await cursor.toArray()).map(imageShortDataProjection(origin)));
+      .send((await cursor.toArray()).map(themeShortDataProjection(origin)));
   };
 }
 

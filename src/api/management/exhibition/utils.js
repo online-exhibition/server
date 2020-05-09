@@ -2,8 +2,10 @@ export function exhibitionDataProjection(origin) {
   return (entry) => ({
     id: entry._id,
     title: entry.title,
+    summary: entry.summary,
     description: entry.description,
     maxCount: entry.maxCount,
+    start: entry.start,
     expire: entry.expire,
     textColor: entry.textColor,
     backgroundColor: entry.backgroundColor,
@@ -20,8 +22,10 @@ export function exhibitionShortDataProjection(origin) {
   return (entry) => ({
     id: entry._id,
     title: entry.title,
+    summary: entry.summary,
     count: entry.images.length,
     maxCount: entry.maxCount,
+    start: entry.start,
     expire: entry.expire,
     active: entry.active,
     created: entry.created,

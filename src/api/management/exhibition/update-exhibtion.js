@@ -17,22 +17,46 @@ async function v1(config, logger) {
   return async (req, res) => {
     const { traceId, user, params, body, origin } = req;
     const { exhibitionId } = params;
-    const { title, description, maxCount, expire, theme, active } = body;
-    const exhibition = {
+    const {
       title,
+      summary,
       description,
       maxCount,
+      start,
+      expire,
+      theme,
+      active,
+    } = body;
+    const exhibition = {
+      title,
+      summary,
+      description,
+      maxCount,
+      start,
       expire,
       theme,
       active,
     };
-    validate(exhibition, ["title", "description"], 2048);
+    validate(exhibition, ["title"], 4096);
 
     assert.regex(title, /.{0,100}/, "title", traceId);
-    assert.regex(description, /.{0,1024}/, "description", traceId);
+    assert.regex(summary, /.{0,1024}/, "description", traceId);
+    assert.regex(description, /.{0,4096}/, "description", traceId);
     assert.regex(maxCount, /\d{0,10}/, "maxCount", traceId);
-    assert.regex(theme, /.{0,100}/, "theme", traceId);
+    assert.regex(theme, /.{0,50}/, "theme", traceId);
+    assert.isoDate(start, "start", traceId);
     assert.isoDate(expire, "expire", traceId);
+
+    exhibition.start = start ? new Date(start) : new Date();
+    if (!start) {
+      exhibition.start.setDate(exhibition.start.getDate() + 8);
+    }
+    exhibition.expire = expire
+      ? new Date(expire)
+      : new Date(exhibition.start.getTime());
+    if (!expire) {
+      exhibition.expire.setDate(exhibition.expire.getDate() + 8);
+    }
 
     const objectId = new ObjectId(exhibitionId);
     const imageQuery = { _id: objectId };
@@ -40,7 +64,6 @@ async function v1(config, logger) {
     const update = {
       ...exhibition,
       images: originExhibition.images,
-      expire: expire ? new Date(expire) : null,
       active: !!active,
       updated: new Date(),
       modifier: user.username,
