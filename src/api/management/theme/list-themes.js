@@ -24,7 +24,7 @@ async function v1(config, logger) {
       {
         limit: parseInt(limit, 10),
         skip: parseInt(skip, 10),
-        sort: { name: -1 },
+        sort: { name: 1 },
       }
     );
 

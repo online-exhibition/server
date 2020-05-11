@@ -13,22 +13,17 @@ import registrationTemplate from "./templates/registration";
  * @return {function} The route handler
  */
 async function v1(config, logger) {
-  let database;
-  let register;
-  let users;
-  (async () => {
-    database = await connectDatabase(config.database);
-    register = database.collection("register");
-    users = database.collection("users");
-    register.createIndexes([
-      { key: { username: 1 }, name: "username_unique", unique: true },
-      {
-        key: { registered: 1 },
-        name: "registered",
-        expireAfterSeconds: 60 * 60 * 24 * 2,
-      },
-    ]);
-  })();
+  const database = await connectDatabase(config.database);
+  const register = database.collection("register");
+  const users = database.collection("users");
+  register.createIndexes([
+    { key: { username: 1 }, name: "username_unique", unique: true },
+    {
+      key: { registered: 1 },
+      name: "registered",
+      expireAfterSeconds: 60 * 60 * 24 * 2,
+    },
+  ]);
   return async (req, res) => {
     const { traceId, body } = req;
 
