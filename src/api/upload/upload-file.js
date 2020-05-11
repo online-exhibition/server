@@ -24,7 +24,6 @@ function postProcessing(images, imagesFiles, user, file, logger, traceId) {
             resolve(meta);
           });
       });
-
       let update = {
         user: user._id,
         title: originalname,

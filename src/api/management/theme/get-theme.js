@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 import { connectDatabase } from "../../../database";
 import { themeDataProjection } from "./utils";
 
@@ -15,7 +17,9 @@ async function v1(config, logger) {
     const { id } = params;
     const objectId = new ObjectId(id);
     const themeQuery = { _id: objectId };
-    res.status(200).send(themeDataProjection(await themes.findOne(themeQuery)));
+    res
+      .status(200)
+      .send(themeDataProjection()(await themes.findOne(themeQuery)));
   };
 }
 

@@ -36,7 +36,7 @@ async function v1(config, logger) {
     res
       .status(200)
       .send(
-        themeDataProjection(await themes.findOne({ _id: result.insertedId }))
+        themeDataProjection()(await themes.findOne({ _id: result.insertedId }))
       );
   };
 }

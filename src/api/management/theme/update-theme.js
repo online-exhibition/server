@@ -1,4 +1,7 @@
 import { connectDatabase } from "../../../database";
+import { ObjectId } from "mongodb";
+
+import { themeDataProjection } from "./utils";
 
 /**
  * Creates a route handler
@@ -26,10 +29,10 @@ async function v1(config, logger) {
       updated: new Date(),
     };
     logger.debug({ traceId, update }, "Theme to update");
-    await images.updateOne(imageQuery, { $set: update });
+    await themes.updateOne(themeQuery, { $set: update });
     res
       .status(200)
-      .send(imageDataProjection(origin)(await images.findOne(themeQuery)));
+      .send(themeDataProjection()(await themes.findOne(themeQuery)));
   };
 }
 

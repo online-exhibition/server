@@ -1,6 +1,7 @@
 import { connectDatabase } from "../../database";
-import { themeShortDataProjection } from "./utils";
+import { themeDataProjection } from "../management/theme/utils";
 
+import assert from "../../utils/assert";
 /**
  * Creates a route handler
  * @param  {object} config The server configuration
@@ -29,9 +30,7 @@ async function v1(config, logger) {
     res.set("X-Skip", skip);
     res.set("X-Limit", limit);
     res.set("X-Count", await cursor.count(false));
-    res
-      .status(200)
-      .send((await cursor.toArray()).map(themeShortDataProjection(origin)));
+    res.status(200).send((await cursor.toArray()).map(themeDataProjection()));
   };
 }
 

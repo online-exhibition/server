@@ -1,4 +1,6 @@
 import { connectDatabase } from "../../../database";
+import assert from "../../../utils/assert";
+
 import { themeShortDataProjection } from "./utils";
 
 /**
@@ -31,7 +33,7 @@ async function v1(config, logger) {
     res.set("X-Count", await cursor.count(false));
     res
       .status(200)
-      .send((await cursor.toArray()).map(themeShortDataProjection(origin)));
+      .send((await cursor.toArray()).map(themeShortDataProjection()));
   };
 }
 

@@ -1,5 +1,4 @@
-import { connectDatabase } from "../../database";
-import { themeDataProjection } from "../management/theme/utils";
+import { connectDatabase } from "../../../database";
 
 /**
  * Creates a route handler
@@ -14,10 +13,15 @@ async function v1(config, logger) {
     const { params } = req;
     const { id } = params;
     const objectId = new ObjectId(id);
-    const themeQuery = { _id: objectId };
-    res
-      .status(200)
-      .send(themeDataProjection()(await themes.findOne(themeQuery)));
+    const result = await themes.deleteOne({ _id: objectId });
+    if (result.result.ok !== 1) {
+      throw new HttpError(
+        500,
+        "ErrorDeleteTheme",
+        "Error deleting the requested theme."
+      );
+    }
+    res.status(200).send({ oke: true });
   };
 }
 
