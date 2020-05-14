@@ -1,4 +1,3 @@
-
 /**
  * Creates a route handler
  * @param  {object} config The server configuration
@@ -7,7 +6,7 @@
  */
 async function v1(config, logger) {
   return async (req, res) => {
-    const {user} = req;
+    const { user } = req;
     res.status(200).send(user);
   };
 }

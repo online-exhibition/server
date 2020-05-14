@@ -1,7 +1,7 @@
-import {connectDatabase} from '../../database';
+import { connectDatabase } from "../../database";
 
 function parseToken(token) {
-  const pos = token.indexOf(':');
+  const pos = token.indexOf(":");
   if (pos > -1) {
     return [token.substr(0, pos), token.substr(pos + 1)];
   }
@@ -9,8 +9,11 @@ function parseToken(token) {
 }
 
 function parseAuthorization(authorization) {
-  if (authorization && authorization.startsWith('Basic ')) {
-    const decoded = new Buffer(authorization.split(' ')[1], 'base64').toString();
+  if (authorization && authorization.startsWith("Basic ")) {
+    const decoded = new Buffer(
+      authorization.split(" ")[1],
+      "base64"
+    ).toString();
     return parseToken(decoded);
   }
   return [];
@@ -27,19 +30,19 @@ async function v1(config, logger) {
   let users;
   (async () => {
     database = await connectDatabase(config.database);
-    users = database.collection('users');
+    users = database.collection("users");
   })();
   return async (req, res) => {
-    const {traceId} = req;
-    const [username, password] = parseAuthorization(req.get('Authorization'));
-    const user = await users.findOne({username, password});
+    const { traceId } = req;
+    const [username, password] = parseAuthorization(req.get("Authorization"));
+    const user = await users.findOne({ username, password });
     if (user) {
-      logger.debug({traceId}, 'Logged in user %s', username);
+      logger.debug({ traceId }, "Logged in user %s", username);
       delete user._id;
       delete user.password;
       return res.status(200).send(user);
     }
-    logger.debug({traceId}, 'Failed logging in user %s', username);
+    logger.debug({ traceId }, "Failed logging in user %s", username);
     res.status(403).send();
   };
 }

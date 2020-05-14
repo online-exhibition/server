@@ -22,7 +22,7 @@ async function v1(config, logger) {
     assert.regex(skip, /\d{0,10}/, "skip", traceId);
     assert.regex(limit, /\d{0,10}/, "limit", traceId);
     let listQuery = { active: true, expire: { $gte: new Date() } };
-    if (expired) {
+    if (Boolean(expired)) {
       listQuery = { active: true, expire: { $lt: new Date() } };
     }
     const cursor = exhibitions.find(listQuery, {
